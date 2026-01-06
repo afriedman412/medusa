@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>{% block title %}MEDUSA{% endblock %}</title>
+        <link rel="stylesheet" href="/static/style.css" />
+    </head>
+    <body>
+        <header class="header">
+            <div class="brand">
+                <div class="brand__title">MEDUSA</div>
+                <div class="brand__subtitle">DJ roguelike proof-of-concept</div>
+            </div>
+            <div class="header__right">
+                <a class="link" href="/">New run</a>
+            </div>
+        </header>
+
+        <main class="container">
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="footer">
+            <div class="footer__hint">
+                Tip: safe picks stabilize vibe, but variety + crowd reads are how you spike score.
+            </div>
+        </footer>
+    </body>
+</html>

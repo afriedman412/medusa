@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block title %}MEDUSA — Turn {{ turn + 1 }}{% endblock %}
+
+{% block content %}
+
+<!-- ===================== -->
+<!-- TOP HUD -->
+<!-- ===================== -->
+<section
+    id="hud"
+    class="topbar"
+    aria-label="Top HUD: Turn, Vibe, Score">
+    <div class="topbar__row">
+        <div class="topbar__left">
+            <div class="kicker">TURN</div>
+            <div class="value">{{ turn + 1 }} / {{ turns }}</div>
+        </div>
+
+        <div class="topbar__center">
+            <div class="kicker">VIBE</div>
+            {% set vibe_pct = (((vibe + 100) / 200) * 100) %}
+            <div class="meter meter--big">
+                <div class="meter__bar">
+                    <div class="meter__fill" style="width: {{ vibe_pct | round(0) }}%"></div>
+                </div>
+                <div class="meter__label">{{ vibe | round(0) }}</div>
+            </div>
+        </div>
+
+        <div class="topbar__right">
+            <div class="kicker">SCORE</div>
+            <div class="value">{{ score }}</div>
+        </div>
+    </div>
+
+    {% if last_reaction %}
+    <div class="reaction">{{ last_reaction }}</div>
+    {% endif %}
+</section>
+
+{% set last_turn = last_turn if last_turn else None %}
+{% set d = last_turn.diagnostics if last_turn else {} %}
+
+<!-- ===================== -->
+<!-- CLUB METRICS -->
+<!-- ===================== -->
+<section
+    id="club-metrics"
+    class="card"
+    aria-label="Club Metrics: Capacity and Demographics">
+    <div class="card__title">CLUB METRICS</div>
+
+    {% macro ring(label, value01, delta01) %}
+    {% set pct = (value01 * 100) %}
+    {% set dpct = (delta01 * 100) %}
+    <div class="ring">
+        <svg viewBox="0 0 120 120" class="ring__svg" aria-hidden="true">
+            <circle class="ring__bg" cx="60" cy="60" r="46"></circle>
+            <circle class="ring__fg" cx="60" cy="60" r="46"
+                style="stroke-dashoffset: {{ 289 - (289 * value01) }}"></circle>
+        </svg>
+
+        <div class="ring__center">
+            <div class="ring__value">{{ pct | round(0) }}%</div>
+            <div class="ring__label">{{ label }}</div>
+            <div class="ring__delta {% if dpct >= 0 %}pos{% else %}neg{% endif %}">
+                {% if dpct >= 0 %}+{% endif %}{{ dpct | round(0) }}%
+            </div>
+        </div>
+    </div>
+    {% endmacro %}
+
+    <div class="rings">
+        {{ ring("Capacity", club.capacity, d.get("capacity_delta", 0.0)) }}
+        {{ ring("Male", club.male, d.get("male_delta", 0.0)) }}
+        {{ ring("Queer", club.queer, d.get("queer_delta", 0.0)) }}
+        {{ ring("Normie", club.normie, d.get("normie_delta", 0.0)) }}
+    </div>
+
+    <div class="note">
+        Demographics drift faster on low vibe / trainwrecks.
+    </div>
+</section>
+
+<!-- ===================== -->
+<!-- SONG CONTEXT -->
+<!-- ===================== -->
+<section
+    id="song-context"
+    class="card"
+    aria-label="Song Context: Active and Previous Track">
+    <div class="card__title">SONGS</div>
+
+    <div class="songsrow">
+        <div class="active">
+            <div class="active__label">ACTIVE</div>
+            <div class="active__big">{{ active.genre | upper }}</div>
+            <div class="active__sub">{{ active.bpm }} BPM</div>
+        </div>
+
+        <div class="active active--muted">
+            <div class="active__label">PREVIOUS</div>
+            {% if previous %}
+            <div class="active__big">{{ previous.genre | upper }}</div>
+            <div class="active__sub">{{ previous.bpm }} BPM</div>
+            {% else %}
+            <div class="active__big">—</div>
+            <div class="active__sub">Start of night</div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- ===================== -->
+<!-- TURN REPORT -->
+<!-- ===================== -->
+<section
+    id="turn-report"
+    class="card"
+    aria-label="Turn Report: Scoring, Vibe, Risk Diagnostics">
+    <div class="card__title">TURN REPORT</div>
+
+    {% if last_turn %}
+    <div class="reportgrid">
+        <div class="reportitem">
+            <div class="rk">Points</div>
+            <div class="rv">+{{ last_turn.points_gained }}</div>
+        </div>
+
+        <div class="reportitem">
+            <div class="rk">Vibe Δ</div>
+            <div class="rv">
+                {% set vd = (last_turn.vibe_after - last_turn.vibe_before) %}
+                {% if vd >= 0 %}+{% endif %}{{ vd | round(0) }}
+            </div>
+        </div>
+
+        <div class="reportitem">
+            <div class="rk">Trainwreck</div>
+            <div class="rv">
+                {{ (d.get("trainwreck_chance", 0.0) * 100) | round(0) }}%
+                {% if d.get("did_trainwreck", 0.0) >= 0.5 %} (YES){% endif %}
+            </div>
+        </div>
+
+        <div class="reportitem">
+            <div class="rk">Similarity</div>
+            <div class="rv">{{ (d.get("similarity", 0.0) * 100) | round(0) }}%</div>
+        </div>
+
+        <div class="reportitem">
+            <div class="rk">Variety</div>
+            <div class="rv">{{ (d.get("variety", 0.0) * 100) | round(0) }}%</div>
+        </div>
+
+        <div class="reportitem">
+            <div class="rk">Repeat Penalty</div>
+            <div class="rv">{{ (d.get("rep_mult", 1.0) * 100) | round(0) }}%</div>
+        </div>
+    </div>
+
+    <div class="note">{{ last_turn.reaction }}</div>
+    {% else %}
+    <div class="note">Play your first song to generate a report.</div>
+    {% endif %}
+</section>
+
+<!-- ===================== -->
+<!-- PLAYER HAND -->
+<!-- ===================== -->
+<section
+    id="player-hand"
+    class="card"
+    aria-label="Player Hand: Available Songs">
+    <div class="card__title">YOUR HAND</div>
+
+    <form method="post" action="/game/{{ sid }}/play" class="hand">
+        <div class="hand__grid">
+            {% for c in hand %}
+            <button class="song" type="submit" name="choice" value="{{ loop.index }}">
+                <div class="song__idx">{{ loop.index }}</div>
+                <div class="song__genre">{{ c.genre }}</div>
+                <div class="song__bpm">{{ c.bpm }} BPM</div>
+            </button>
+            {% endfor %}
+        </div>
+    </form>
+
+    <div class="hint">
+        Click a card to play it.
+    </div>
+</section>
+
+{% endblock %}

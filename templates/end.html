@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}MEDUSA — End of Night{% endblock %}
+
+{% block content %}
+<section class="card">
+    <div class="card__title">END OF NIGHT</div>
+
+    <div class="bigscore">{{ score }}</div>
+    <div class="subscore">Final score after {{ turns }} songs</div>
+
+    <div class="statrow">
+        <div class="stat">
+            <div class="stat__k">Average vibe</div>
+            <div class="stat__v">{{ (avg_vibe * 100) | round(0) }}%</div>
+        </div>
+        <div class="stat">
+            <div class="stat__k">Peak capacity</div>
+            <div class="stat__v">{{ (peak_capacity * 100) | round(0) }}%</div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <a class="btn" href="/">Start new run</a>
+        <a class="btn btn--ghost" href="/game/{{ sid }}">View final state</a>
+    </div>
+
+    <div class="hint">
+        Next: add a history page, intentional “switch it up”, and queue-based drift.
+    </div>
+</section>
+{% endblock %}
