@@ -1,0 +1,29 @@
+steps:
+  # Build container
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', '${_IMAGE}', '.']
+
+  # Push container
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '${_IMAGE}']
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      [
+        'run','deploy','${_SERVICE}',
+        '--image','${_IMAGE}',
+        '--region','${_REGION}',
+        '--platform','managed',
+        '--allow-unauthenticated'
+      ]
+
+substitutions:
+  _SERVICE: medusa
+  _REGION: us-central1
+  _AR_REPO: medusa
+  _IMAGE: ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE}:$COMMIT_SHA
+
+images:
+  - '${_IMAGE}'
