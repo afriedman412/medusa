@@ -20,7 +20,7 @@ steps:
       ]
 
 substitutions:
-  _SERVICE: medusa
+  _SERVICE: medusa-service
   _REGION: us-central1
   _AR_REPO: medusa
   _IMAGE: ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE}:$COMMIT_SHA
